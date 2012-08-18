@@ -1,0 +1,122 @@
+Puppet::Type.type(:net_share).provide(:net_share) do
+	desc "Windows network share"
+
+  confine     :operatingsystem => :windows
+  defaultfor  :operatingsystem => :windows
+
+  commands :net => File.join(ENV['SystemRoot'] || 'c:/windows', 'system32/net.exe')
+
+  mk_resource_methods
+
+  # Match resources to providers where the resource name matches the provider name
+  def self.prefetch(resources)
+    resources.each do |name, resource|
+      provider = new(query(name))
+
+      if provider
+        resource.provider = provider
+      else
+        resource.provider = new(:ensure => :absent)
+      end
+    end
+  end
+
+  def initialize(*args)
+    super
+
+    # Make a duplicate of the properties so we can compare them during a flush
+    @initial_properties = @property_hash.dup
+  end
+
+  def exists?
+    @property_hash[:ensure] != :absent
+  end
+
+  def create
+    execute_create
+    @property_hash[:ensure] = :present
+  end
+
+  def destroy
+    execute_delete
+    @property_hash[:ensure] = :absent
+  end
+
+  def flush
+    execute_flush
+    @property_hash.clear
+  end
+
+  private
+  def self.query(name)
+    cmd = [command(:net), 'share', name]
+    output = execute(cmd, { :failonfail => false })
+
+    properties = {}
+    properties[:name] = name
+
+    if $?.exitstatus == 2
+      properties[:ensure] = :absent
+    elsif $?.exitstatus != 0
+      raise ExecutionFailure, "Execution of '#{cmd.join(' ')}' returned #{$?.exitstatus}: #{output}"
+    end
+
+    properties[:ensure] = :present
+
+    output.each do |line|
+      break if line.rstrip.length == 0
+
+      last_name = name
+      name = line[0..17].rstrip
+      value = line[18..-1].rstrip
+
+      if name.length == 0
+        name = last_name
+      end
+
+      case name
+        when 'Path'
+          properties[:path] = value
+        when 'Remark'
+          properties[:remark] = value
+        when 'Maximum users'
+          if value = 'No limit'
+            properties[:maximumusers] = :unlimited
+          else
+            properties[:maximumusers] = value.to_i
+          end
+        when 'Caching'
+          case value
+            when 'Caching disabled'
+              value = :none
+            when 'Manual caching of documents'
+              value = :manual
+            when 'Automatic caching of documents'
+              value = :documents
+            when 'Automatic caching of programs and documents'
+              value = :programs
+            else
+              raise Puppet::Error, "Unrecognised Caching value '#{value}'"
+          end
+
+          properties[:cache] = value
+        when 'Permission'
+          properties[:permissions] ||= []
+
+          user, access = value.split(',', 2)
+          properties[:permissions] << "#{user.strip},#{access.strip.downcase}"
+      end
+    end
+
+    properties
+  end
+
+  def execute_create
+  end
+
+  def execute_delete
+  end
+
+  def execute_flush
+  end
+end
