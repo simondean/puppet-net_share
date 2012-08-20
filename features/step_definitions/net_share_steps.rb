@@ -118,6 +118,7 @@ Given /^that's it$/ do
 end
 
 Then /^puppet has not changed the "([^"]*)" net_share$/ do |name|
+  net_share_exists?(name).should be true
   @net_share_name = name
   @net_share_properties = get_net_share_properties(name)
 end
@@ -131,5 +132,23 @@ Then /^puppet has left its "([^"]*)" property matching "([^"]*)"$/ do |name, val
 end
 
 Then /^puppet has not created the "([^"]*)" net_share$/ do |name|
+  net_share_exists?(name).should be false
+end
+
+Then /^puppet has created the "([^"]*)" net_share$/ do |name|
+  net_share_exists?(name).should be true
+  @net_share_name = name
+  @net_share_properties = get_net_share_properties(name)
+end
+
+Then /^puppet has set its "([^"]*)" property to "([^"]*)"$/ do |name, value|
+  value_to_string(@net_share_properties[name.to_sym]).should == value
+end
+
+Then /^puppet has set its "([^"]*)" property to match "([^"]*)"$/ do |name, value|
+  value_to_string(@net_share_properties[name.to_sym]).should match value
+end
+
+When /^puppet has deleted the "([^"]*)" net_share$/ do |name|
   net_share_exists?(name).should be false
 end
