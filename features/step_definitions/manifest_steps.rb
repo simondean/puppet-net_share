@@ -11,8 +11,7 @@ When /^puppet applies the manifest$/ do
     manifest_file.write @manifest
     manifest_file.close
 
-    # Have to call puppet via cmd to prevent this ruby process's environment variables being passed to puppet
-    system("cmd", "/c", File.join(ENV['ProgramFiles(x86)'], 'Puppet Labs/Puppet/bin/puppet.bat'), 'apply', '--debug', '--detailed-exitcodes', '--modulepath', './modules', manifest_file.path)
+    system({ 'BUNDLE_BIN_PATH' => nil, 'BUNDLE_GEMFILE' => nil, 'GEM_HOME' => nil, 'GEM_PATH' => nil, 'RUBYLIB' => nil, 'RUBYOPT' => nil }, File.join(ENV['ProgramFiles(x86)'], 'Puppet Labs/Puppet/bin/puppet.bat'), 'apply', '--debug', '--detailed-exitcodes', '--modulepath', './modules', manifest_file.path)
 
     @changes = false
     @failures = false

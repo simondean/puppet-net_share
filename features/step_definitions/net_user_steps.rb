@@ -17,7 +17,7 @@ def create_user(name)
   raise "Failed to add user.  Exit code #{$?.exitstatus}" unless success
 end
 
-Given /^a "user" called "([^"]*)"$/ do |name|
+Given /^a user called "([^"]*)"$/ do |name|
   delete_user name
   create_user name
 end

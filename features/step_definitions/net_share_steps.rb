@@ -98,9 +98,13 @@ def value_to_string(value)
   value.to_s
 end
 
-Given /^a "net_share" called "([^"]*)"$/ do |name|
+Given /^a net_share called "([^"]*)"$/ do |name|
   @net_share_name = name
   @net_share_properties = {}
+end
+
+Given /^no net_share called "([^"]*)"$/ do |name|
+  delete_net_share name
 end
 
 Given /^its "([^"]*)" property is set to "([^"]*)"$/ do |name, value|
@@ -113,15 +117,19 @@ Given /^that's it$/ do
   create_net_share @net_share_name, @net_share_properties
 end
 
-When /^puppet has not changed the "([^"]*)" "net_share"$/ do |name|
+Then /^puppet has not changed the "([^"]*)" net_share$/ do |name|
   @net_share_name = name
   @net_share_properties = get_net_share_properties(name)
 end
 
-When /^puppet has left its "([^"]*)" property set to "([^"]*)"$/ do |name, value|
+Then /^puppet has left its "([^"]*)" property set to "([^"]*)"$/ do |name, value|
   value_to_string(@net_share_properties[name.to_sym]).should == value
 end
 
-When /^puppet has left its "([^"]*)" property matching "([^"]*)"$/ do |name, value|
+Then /^puppet has left its "([^"]*)" property matching "([^"]*)"$/ do |name, value|
   value_to_string(@net_share_properties[name.to_sym]).should match value
+end
+
+Then /^puppet has not created the "([^"]*)" net_share$/ do |name|
+  net_share_exists?(name).should be false
 end
