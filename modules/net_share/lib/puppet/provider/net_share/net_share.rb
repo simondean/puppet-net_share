@@ -78,7 +78,7 @@ Puppet::Type.type(:net_share).provide(:net_share) do
         when 'Remark'
           properties[:remark] = value
         when 'Maximum users'
-          if value = 'No limit'
+          if value == 'No limit'
             properties[:maximumusers] = :unlimited
           else
             properties[:maximumusers] = value.to_i
