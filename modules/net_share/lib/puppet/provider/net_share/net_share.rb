@@ -23,9 +23,6 @@ Puppet::Type.type(:net_share).provide(:net_share) do
 
   def initialize(*args)
     super
-
-    # Make a duplicate of the properties so we can compare them during a flush
-    @initial_properties = @property_hash.dup
   end
 
   def exists?
@@ -57,6 +54,7 @@ Puppet::Type.type(:net_share).provide(:net_share) do
 
     if $?.exitstatus == 2
       properties[:ensure] = :absent
+      return properties
     elsif $?.exitstatus != 0
       raise ExecutionFailure, "Execution of '#{cmd.join(' ')}' returned #{$?.exitstatus}: #{output}"
     end
@@ -112,11 +110,49 @@ Puppet::Type.type(:net_share).provide(:net_share) do
   end
 
   def execute_create
+    args = ['share', "#{resource[:name]}=#{resource[:path]}"]
+
+    self.class.resource_type.validproperties.each do |name|
+      if name != :ensure
+        value = @resource.should(name)
+
+        unless value.nil?
+          case name
+            when :path
+            when :remark
+              args << "/remark:#{value}"
+            when :maximumusers
+              if value == :unlimited
+                args << "/unlimited"
+              else
+                args << "/users:#{value}"
+              end
+            when :cache
+              args << "/cache:#{value}"
+            when :permissions
+              value.each do |user_permissions|
+                args << "/grant:#{user_permissions}"
+              end
+            else
+              raise Puppet::Error, "Unrecognised property '#{name}'"
+          end
+
+          @property_hash[name] = value
+        end
+      end
+    end
+
+    net(*args)
   end
 
   def execute_delete
+    net('share', resource[:name], '/delete')
   end
 
   def execute_flush
+    if @resource[:ensure] != :absent
+      execute_delete
+      execute_create
+    end
   end
 end

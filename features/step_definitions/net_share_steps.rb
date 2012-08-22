@@ -25,8 +25,8 @@ def create_net_share(name, properties)
           args << "/shares:#{value}"
         end
       when :permissions
-        value.split(';').each do |individual_value|
-          args << "/grant:#{individual_value}"
+        value.split(';').each do |user_permissions|
+          args << "/grant:#{user_permissions}"
         end
       else
         args << "/#{name}:#{value}"
@@ -62,7 +62,7 @@ def get_net_share_properties(name)
       when 'Remark'
         properties[:remark] = value
       when 'Maximum users'
-        if value = 'No limit'
+        if value == 'No limit'
           properties[:maximumusers] = :unlimited
         else
           properties[:maximumusers] = value.to_i
@@ -149,6 +149,20 @@ Then /^puppet has set its "([^"]*)" property to match "([^"]*)"$/ do |name, valu
   value_to_string(@net_share_properties[name.to_sym]).should match value
 end
 
-When /^puppet has deleted the "([^"]*)" net_share$/ do |name|
+Then /^puppet has deleted the "([^"]*)" net_share$/ do |name|
   net_share_exists?(name).should be false
+end
+
+Then /^puppet has changed the "([^"]*)" net_share$/ do |name|
+  net_share_exists?(name).should be true
+  @net_share_name = name
+  @net_share_properties = get_net_share_properties(name)
+end
+
+Then /^puppet has changed its "([^"]*)" property to "([^"]*)"$/ do |name, value|
+  value_to_string(@net_share_properties[name.to_sym]).should == value
+end
+
+Then /^puppet has changed its "([^"]*)" property to match "([^"]*)"$/ do |name, value|
+  value_to_string(@net_share_properties[name.to_sym]).should match value
 end

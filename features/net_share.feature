@@ -109,10 +109,10 @@ Feature: Network Shares
       }
       """
     When puppet applies the manifest
-    Then puppet has not made changes
-    And puppet has not changed the "PuppetTest" net_share
-    And puppet has left its "path" property set to "c:\puppet_test2"
-    And puppet has left its "remark" property set to "PuppetTest2"
-    And puppet has left its "maximumusers" property set to "1"
-    And puppet has left its "cache" property set to "manual"
-    And puppet has left its "permissions" property matching "^[^\\]+\\PuppetTest,full$"
+    Then puppet has made changes
+    And puppet has changed the "PuppetTest" net_share
+    And puppet has changed its "path" property to "c:\puppet_test2"
+    And puppet has changed its "remark" property to "PuppetTest2"
+    And puppet has changed its "maximumusers" property to "1"
+    And puppet has changed its "cache" property to "manual"
+    And puppet has changed its "permissions" property to match "^[^\\]+\\PuppetTest,full$"

@@ -11,7 +11,7 @@ Puppet::Type.newtype(:net_share) do
   newproperty(:remark)
 
   newproperty(:maximumusers) do
-    newvalues(:unlimited, /[1-9][0-9]+/)
+    newvalues(:unlimited, /[1-9][0-9]*/)
 
     munge do |value|
       if value.casecmp('unlimited') == 0
@@ -40,8 +40,10 @@ Puppet::Type.newtype(:net_share) do
   #end
 
   validate do
-    [:path].each do |attribute|
-      raise Puppet::Error, "Attribute '#{attribute}' is mandatory" unless self[attribute]
+    if self[:ensure] != :absent
+      [:path].each do |attribute|
+        raise Puppet::Error, "Attribute '#{attribute}' is mandatory" unless self[attribute]
+      end
     end
   end
 end
