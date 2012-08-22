@@ -110,7 +110,22 @@ Puppet::Type.type(:net_share).provide(:net_share) do
   end
 
   def execute_create
-    args = ['share', "#{resource[:name]}=#{resource[:path]}"]
+    net(*(['share', "#{resource[:name]}=#{resource[:path]}"] + get_property_args()))
+  end
+
+  def execute_delete
+    net('share', resource[:name], '/delete')
+  end
+
+  def execute_flush
+    if @resource[:ensure] != :absent
+      execute_delete
+      execute_create
+    end
+  end
+
+  def get_property_args()
+    args = []
 
     self.class.resource_type.validproperties.each do |name|
       if name != :ensure
@@ -142,17 +157,6 @@ Puppet::Type.type(:net_share).provide(:net_share) do
       end
     end
 
-    net(*args)
-  end
-
-  def execute_delete
-    net('share', resource[:name], '/delete')
-  end
-
-  def execute_flush
-    if @resource[:ensure] != :absent
-      execute_delete
-      execute_create
-    end
+    args
   end
 end
