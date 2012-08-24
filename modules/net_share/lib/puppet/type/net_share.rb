@@ -1,6 +1,18 @@
 Puppet::Type.newtype(:net_share) do
   @doc = "Windows network share"
 
+  class CaseInsensitiveProperty < Puppet::Property
+    def insync?(is)
+      raise Puppet::Error, "Invalid value for attribute '#{name}', must be an array" unless @should.is_a?(Array)
+
+      (is.length == @should.length) and (is.zip(@should).all? { |a, b| property_matches?(a, b) })
+    end
+
+    def property_matches?(current, desired)
+      current.to_s.casecmp(desired.to_s) == 0
+    end
+  end
+
   ensurable
 
   newparam(:name) do
@@ -11,7 +23,7 @@ Puppet::Type.newtype(:net_share) do
   newproperty(:remark)
 
   newproperty(:maximumusers) do
-    newvalues(:unlimited, /[1-9][0-9]*/)
+    newvalues(:unlimited, /^[1-9][0-9]*$/)
 
     munge do |value|
       if value.casecmp('unlimited') == 0
@@ -26,7 +38,7 @@ Puppet::Type.newtype(:net_share) do
     newvalues(:manual, :documents, :programs, :branchcache, :none)
   end
 
-  newproperty(:permissions, :array_matching => :all) do
+  newproperty(:permissions, :parent => CaseInsensitiveProperty, :array_matching => :all) do
     munge do |value|
       value.collect do |item|
         user, access = item.split(',', 2)

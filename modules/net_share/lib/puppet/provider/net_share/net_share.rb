@@ -21,10 +21,6 @@ Puppet::Type.type(:net_share).provide(:net_share) do
     end
   end
 
-  def initialize(*args)
-    super
-  end
-
   def exists?
     @property_hash[:ensure] != :absent
   end
@@ -40,6 +36,7 @@ Puppet::Type.type(:net_share).provide(:net_share) do
   end
 
   def flush
+    info "deleting and recreating net_share '#{name}'"
     execute_flush
     @property_hash.clear
   end
@@ -102,7 +99,9 @@ Puppet::Type.type(:net_share).provide(:net_share) do
           properties[:permissions] ||= []
 
           user, access = value.split(',', 2)
-          properties[:permissions] << "#{user.strip},#{access.strip.downcase}"
+          permission = "#{user.strip},#{access.strip.downcase}"
+
+          properties[:permissions] << permission
       end
     end
 
