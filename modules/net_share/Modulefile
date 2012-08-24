@@ -1,5 +1,5 @@
 name 'simondean-net_share'
-version '0.1.1'
+version '0.1.2'
 summary 'Windows network share module'
 description 'Module for configuring Windows network file shares. Uses the \'net share\' command. '
 project_page 'https://github.com/simondean/puppet-net_share'
