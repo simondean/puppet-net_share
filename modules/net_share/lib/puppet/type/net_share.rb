@@ -48,7 +48,7 @@ Puppet::Type.newtype(:net_share) do
   end
 
   newproperty(:permissions, :parent => CaseInsensitiveProperty, :array_matching => :all) do
-    desc "An array of permissions. Example: ['computer\user,full', 'computer\user2,change', 'computer\user3,read']"
+    desc "An array of permissions. Example: ['computer\\user,full', 'computer\\user2,change', 'computer\\user3,read']"
 
     munge do |value|
       value.collect do |item|
