@@ -16,13 +16,20 @@ Puppet::Type.newtype(:net_share) do
   ensurable
 
   newparam(:name) do
-    desc "Network share name"
+    desc "Network share name. "
   end
 
-  newproperty(:path)
-  newproperty(:remark)
+  newproperty(:path) do
+    desc "File system path to be shared. Will be auto-required. "
+  end
+
+  newproperty(:remark) do
+    desc "Comments stored against the share. "
+  end
 
   newproperty(:maximumusers) do
+    desc "Maximum number of users that can concurrently access the share. Valid values are 'unlimited' or a number. "
+
     newvalues(:unlimited, /^[1-9][0-9]*$/)
 
     munge do |value|
@@ -35,10 +42,14 @@ Puppet::Type.newtype(:net_share) do
   end
 
   newproperty(:cache) do
+    desc "Caching. "
+
     newvalues(:manual, :documents, :programs, :branchcache, :none)
   end
 
   newproperty(:permissions, :parent => CaseInsensitiveProperty, :array_matching => :all) do
+    desc "An array of permissions. Example: ['computer\user,full', 'computer\user2,change', 'computer\user3,read']"
+
     munge do |value|
       value.collect do |item|
         user, access = item.split(',', 2)
