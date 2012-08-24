@@ -21,24 +21,39 @@ Puppet::Type.type(:net_share).provide(:net_share) do
     end
   end
 
+  def initialize(*args)
+    super
+
+    # Make a duplicate of the properties so we can compare them during a flush
+    @initial_properties = @property_hash.dup
+  end
+
   def exists?
     @property_hash[:ensure] != :absent
   end
 
   def create
-    execute_create
     @property_hash[:ensure] = :present
   end
 
   def destroy
-    execute_delete
     @property_hash[:ensure] = :absent
   end
 
   def flush
-    info "deleting and recreating net_share '#{name}'"
-    execute_flush
+    if @property_hash[:ensure] != :absent
+      if @initial_properties[:ensure] != :absent
+        info "deleting and recreating net_share '#{name}'"
+        execute_delete
+      end
+
+      execute_create
+    else
+      execute_delete
+    end
+
     @property_hash.clear
+    @initial_properties.clear
   end
 
   private
@@ -116,13 +131,6 @@ Puppet::Type.type(:net_share).provide(:net_share) do
     net('share', resource[:name], '/delete')
   end
 
-  def execute_flush
-    if @resource[:ensure] != :absent
-      execute_delete
-      execute_create
-    end
-  end
-
   def get_property_args()
     args = []
 
@@ -150,9 +158,9 @@ Puppet::Type.type(:net_share).provide(:net_share) do
             else
               raise Puppet::Error, "Unrecognised property '#{name}'"
           end
-
-          @property_hash[name] = value
         end
+
+        @property_hash[name] = value
       end
     end
 
