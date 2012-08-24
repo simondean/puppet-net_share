@@ -47,9 +47,9 @@ Puppet::Type.newtype(:net_share) do
     end
   end
 
-  #autorequire(:file) do
-  #  self[:path]
-  #end
+  autorequire(:file) do
+    self[:path]
+  end
 
   validate do
     if self[:ensure] != :absent

@@ -153,3 +153,22 @@ Feature: Network Shares
     And puppet has changed its "maximumusers" property to "1"
     And puppet has changed its "cache" property to "manual"
     And puppet has changed its "permissions" property to match "^[^\\]+\\PuppetTest,full$"
+
+  Scenario: Auto-requiring
+    Given no net_share called "PuppetTest"
+    Given no directory called "c:\puppet_test3"
+    Given the manifest
+    """
+      net_share {'PuppetTest':
+        ensure        => present,
+        path          => 'c:\puppet_test3',
+      }
+
+      file {'c:\puppet_test3':
+        ensure        => directory,
+      }
+      """
+    When puppet applies the manifest
+    Then puppet has made changes
+    And puppet has created the "PuppetTest" net_share
+    And puppet has set its "path" property to "c:\puppet_test3"
