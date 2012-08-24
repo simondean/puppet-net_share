@@ -3,6 +3,8 @@ puppet-net_share
 
 Puppet module for configuring Windows network shares.
 
+Note: When making changes to a share, the module will first destroy the share and then recreate it. This is due to a limitation with the “net share” command where permissions cannot be removed from an existing share.
+
 The module is available from: http://forge.puppetlabs.com/simondean/net_share
 
 
@@ -29,7 +31,7 @@ The module is available from: http://forge.puppetlabs.com/simondean/net_share
 
 ## Tested on:
 
-- Tested against the Windows installer version of Puppet on Windows 7 64bit.  
+- Tested against the Windows installer version of Puppet on Windows 7 64bit. 
 
 If using the rake build scipt, you need to use Ruby 1.9.2
 
