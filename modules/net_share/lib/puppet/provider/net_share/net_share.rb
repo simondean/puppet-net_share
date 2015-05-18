@@ -60,7 +60,7 @@ Puppet::Type.type(:net_share).provide(:net_share) do
   def self.query(name)
     cmd = [command(:net), 'share', name]
     output = execute(cmd, { :failonfail => false })
-
+	output = output.split("\n")
     properties = {}
     properties[:name] = name
 
