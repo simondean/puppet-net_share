@@ -73,7 +73,7 @@ Puppet::Type.type(:net_share).provide(:net_share) do
 
     properties[:ensure] = :present
 
-    output.each do |line|
+    output.each_line do |line|
       break if line.rstrip.length == 0
 
       last_name = name
